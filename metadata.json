@@ -1,0 +1,8 @@
+{
+  "name": "Quick Notes",
+  "description": "A GNOME Shell extension for quick notes.",
+  "uuid": "quicknotes@chesnoksatan",
+  "shell-version": [
+    "45"
+  ]
+}
