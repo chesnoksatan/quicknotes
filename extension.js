@@ -22,21 +22,15 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
+import * as ShellEntry from 'resource:///org/gnome/shell/ui/shellEntry.js';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import * as Files from './utils/files.js';
 
-function logger(str) {
-    console.log("[EXTENSION QuickNotes] " + str)
-}
-
 export default class QuickNotesExtension extends Extension {
     enable() {
-        logger("Loading ...");
-        let start = +Date.now();
-
-        this._indicator = new PanelMenu.Button(0.0, this.metadata.name);
+        this._indicator = new PanelMenu.Button(0.5, this.metadata.name);
         this._indicator.add_child(new St.Icon({
             icon_name: 'notes-app-symbolic',
             style_class: 'system-status-icon',
@@ -59,8 +53,6 @@ export default class QuickNotesExtension extends Extension {
 
         this._indicator.menu.box.add_child(scrollView);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
-
-        logger("Loaded. " + (+Date.now() - start) + "ms taken")
     }
 
     _makeAddItem() {
@@ -87,8 +79,6 @@ export default class QuickNotesExtension extends Extension {
                 const note = Files.createNote(noteName);
                 
                 if (note) {
-                    logger(note);
-                    logger(note.get_name());
                     this._indicator.menu.addMenuItem(new NoteItem(note))
                     Files.openNote(note);
                 }
@@ -103,7 +93,6 @@ export default class QuickNotesExtension extends Extension {
     disable() {
         this._indicator.destroy();
         this._indicator = null;
-        logger("Diabled");
     }
 }
 
@@ -121,20 +110,29 @@ var PromtDialog = GObject.registerClass({
         const label = new St.Label({ 
             text: "Add New Note",
             x_align: Clutter.ActorAlign.CENTER,
+            style_class: 'title',
         });
+        label.style = 'font-weight: bold; font-size: 1.1em;';
 
         let textField = new St.Entry({
             x_expand: true,
             can_focus: true,
         });
+        textField.clutter_text.max_length = 256;
+        textField.clutter_text.connect('text-changed', () => {
+            this.counter.set_text(`${this.entry.get_text().length}/${this.max_len}`);
+        });
+
+        ShellEntry.addContextMenu(textField);
 
         this.contentLayout.add_child(label);
         this.contentLayout.add_child(textField);
 
         this.setButtons([
             {
-                label: 'Close',
+                label: 'Cancel',
                 action: () => this.destroy(),
+                key: Clutter.KEY_Escape
             },
             {
                 label: 'Add Note',
@@ -145,7 +143,8 @@ var PromtDialog = GObject.registerClass({
             },
         ]);
 
-        this.contentLayout.set_width(200);
+        this.contentLayout.set_width(400);
+        this.setInitialKeyFocus(textField);
     }
 });
 

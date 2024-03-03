@@ -2,6 +2,7 @@
   "name": "Quick Notes",
   "description": "A GNOME Shell extension for quick notes.",
   "uuid": "quicknotes@chesnoksatan",
+  "url": "https://github.com/chesnoksatan/quicknotes",
   "shell-version": [
     "45"
   ]
